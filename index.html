@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cas cliniques – Étudiants vs IA</title>
+  <style>
+    /* Cacher le contenu du cas 1 (énoncé + formulaire) au chargement */
+    #case1-content {
+      display: none;
+    }
+
+    /* Cacher le contenu du cas 2 (énoncé + questions) au chargement */
+    #case2-content {
+      display: none;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tab-button.active {
+      background: #007bff;
+      color: #fff;
+      border-color: #007bff;
+    }
+
+    .case {
+      display: none;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .case.active {
+      display: block;
+    }
+
+    .case-description {
+      background: #eef3ff;
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+
+    .question {
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .question.visible {
+      display: block;
+    }
+
+    .question h3 {
+      margin-top: 0;
+    }
+
+    .answers {
+      margin: 10px 0;
+    }
+
+    .answers label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .next-button, .submit-case {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: none;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .next-button:disabled {
+      background: #aaa;
+      cursor: default;
+    }
+
+    .score {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .info {
+      font-size: 0.85rem;
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cas cliniques – Comparaison étudiants / IA</h1>
+  <p class="note">
+    CLIQUEZ SUR TERMINER LE CAS UNE FOIS REMPLIS POUR FAIRE APPARAITRE VOTRE SCORE
+  </p>
+
+  <div class="tabs">
+    <button class="tab-button active" data-target="case1">Cas clinique 1</button>
+    <button class="tab-button" data-target="case2">Cas clinique 2</button>
+  </div>
+
+  <!-- ================== BLOC STATUT ================== -->
+  <div id="status-block" style="max-width:600px; margin:0 auto 20px auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); text-align:center;">
+    <h3>Avant de commencer</h3>
+    <p>Merci d’indiquer votre statut :</p>
+
+    <select id="studentStatus" style="padding:8px; width:80%; border-radius:6px; border:1px solid #ccc;">
+      <option value="">— Sélectionner votre statut —</option>
+      <option value="Interne 1re année">Interne 1re année</option>
+      <option value="Interne 2e année">Interne 2e année</option>
+      <option value="Interne 3e année">Interne 3e année</option>
+      <option value="Interne 4e année">Interne 4e année</option>
+      <option value="Docteur Junior">Docteur Junior</option>
+    </select>
+
+    <br><br>
+
+    <button id="startCase1" style="padding:8px 16px; border:none; border-radius:6px; background:#007bff; color:#fff; cursor:pointer;">
+      Commencer le cas clinique 1
+    </button>
+  </div>
+
+  <!-- ================== CAS CLINIQUE 1 ================== -->
+  <div class="case active" id="case1">
+    <h2>Cas clinique 1</h2>
+
+    <!-- Contenu du cas 1 MASQUÉ au chargement -->
+    <div id="case1-content">
+      <div class="case-description">
+        Mme X, 65 ans, se présente à votre consultation avec sa fille pour discuter du dépistage 
+        du cancer du sein. La patiente présente un antécédent de cancer pancréatique traité 
+        par chirurgie exclusive il y a 14 ans, traitée pour une FA et un diabète. La patiente 
+        est ménopausée depuis 10 ans. Dans ses antécédents familiaux, on retient un cancer du sein 
+        de sa nièce à 40 ans et un cancer du poumon chez son frère à 70 ans.
+      </div>
+
+      <form class="case-form" data-case="1">
+        <!-- Q1 -->
+        <div class="question" data-question="1">
+          <h3>Question 1 – QCM</h3>
+          <p>Quelle(s) sont le(s) réponse(s) exactes :</p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c1_q1_1" data-correct="false"> 1. Le dépistage du cancer du sein concerne les patientes de 50 à 75 ans</label>
+            <label><input type="checkbox" name="c1_q1_2" data-correct="false"> 2. Je prescript une IRM mammaire</label>
+            <label><input type="checkbox" name="c1_q1_3" data-correct="false"> 3. Un TEP scanner est indiqué au vu de son âge et de son histoire familiale</label>
+            <label><input type="checkbox" name="c1_q1_4" data-correct="false"> 4. La patiente n’est pas éligible au dépistage du cancer du sein à cause de son antécédent pancréatique</label>
+            <label><input type="checkbox" name="c1_q1_5" data-correct="true"> 5. La patiente aurait déjà dû recevoir une mammographie de dépistage</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="2" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q2 -->
+        <div class="question" data-question="2">
+          <h3>Question 2 – QCM</h3>
+          <p>La patiente revient avec les résultats de sa mammographie. Quelle(s) sont le(s) réponse(s) exactes :</p>
+          <img src="images/mammo1.png" 
+               alt="Résultat de la mammographie" 
+               style="max-width: 100%; border: 1px solid #ccc; margin: 10px 0; border-radius: 6px;">
+
+          <div class="answers">
+            <label><input type="checkbox" name="c1_q2_1" data-correct="false"> 1. Examens normaux, prochaine mammographie de contrôle dans 2 ans</label>
+            <label><input type="checkbox" name="c1_q2_2" data-correct="false"> 2. La patiente présente un nodule du sein gauche et une atteinte axillaire droite</label>
+            <label><input type="checkbox" name="c1_q2_3" data-correct="true"> 3. Une micro-biopsie mammaire est indiquée</label>
+            <label><input type="checkbox" name="c1_q2_4" data-correct="false"> 4. une cytoponction axillaire gauche est indiquée</label>
+            <label><input type="checkbox" name="c1_q2_5" data-correct="false"> 5. La patiente présente un cancer du sein droit avec extension ganglionnaire axillaire droite</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="3" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q3 -->
+        <div class="question" data-question="3">
+          <h3>Question 3 – QCM</h3>
+          <p>
+            La micro-biopsie retrouve un carcinome canalaire infiltrant G3, RH+, HER2 0, Ki67 10%. La cytoponction axillaire droite retrouve la présence de cellules carcinomateuses sur fond lymphoïde. À l’examen clinique, la patiente présente un bonnet 120E, le sein droit présente une ecchymose post-biopsie et une lésion palpable de 1,5 cm du quadrant supéro-externe du sein droit. Une adénopathie axillaire droite palpable. Pas de lésion palpable dans le sein gauche.
+            Quelle(s) sont le(s) réponse(s) exactes ?
+          </p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c1_q3_1" data-correct="true"> 1. La patiente présente un cancer du sein luminal B</label>
+            <label><input type="checkbox" name="c1_q3_2" data-correct="false"> 2. Une FISH doit être proposée pour explorer le statut HER2</label>
+            <label><input type="checkbox" name="c1_q3_3" data-correct="true"> 3. Un bilan d’extension par TEP scanner est indiqué</label>
+            <label><input type="checkbox" name="c1_q3_4" data-correct="true"> 4. Vous lui proposez une consultation d’oncogénétique</label>
+            <label><input type="checkbox" name="c1_q3_5" data-correct="false"> 5. Une IRM mammaire complémentaire est indiquée</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="4" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q4 -->
+        <div class="question" data-question="4">
+          <h3>Question 4 – QCM</h3>
+          <p>
+            Le bilan d’extension confirme la présence d’un cancer du sein droit avec atteinte axillaire sans extension viscérale ou osseuse. Vous discutez en RCP sénologique du dossier.
+            Quel schéma thérapeutique proposez-vous ?
+          </p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c1_q4_1" data-correct="true"> 1. Chirurgie première</label>
+            <label><input type="checkbox" name="c1_q4_2" data-correct="false"> 2. Chimiothérapie néo-adjuvante puis chirurgie</label>
+            <label><input type="checkbox" name="c1_q4_3" data-correct="false"> 3. Radiothérapie puis chimiothérapie</label>
+            <label><input type="checkbox" name="c1_q4_4" data-correct="false"> 4. Inhibiteur CDK4/6 + anti-aromatase</label>
+            <label><input type="checkbox" name="c1_q4_5" data-correct="false"> 5. Chimiothérapie + immunothérapie néo-adjuvante</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="5" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q5 -->
+        <div class="question" data-question="5">
+          <h3>Question 5 – Question ouverte</h3>
+          <p>
+            La patiente reçoit finalement une mastectomie partielle avec curage ganglionnaire axillaire. L’analyse de la pièce opératoire retrouve un carcinome canalaire infiltrant de 15 mm, grade 3, sans embole, pas de contingent in situ, RH+, le carcinome infiltrant arrive à 3 mm de la limite latérale supéro-interne, 4 N+/14 N, index mitotique élevé, stroma tumoral 5 % de lymphocytes. 
+            Quelle est la classification TNM ?
+          </p>
+
+          <textarea
+  name="c1_q5_open"
+  rows="3"
+  required
+  placeholder="Ex : pTxNx"
+  data-open-correct="pt1cn2"
+></textarea>
+
+          <button type="button" class="next-button" data-next="6" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q6 -->
+        <div class="question" data-question="6">
+          <h3>Question 6 – QCM</h3>
+          <p>Au vu des résultats histologiques, quel traitement adjuvant proposeriez-vous ?</p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c1_q6_1" data-correct="true"> 1. Chimiothérapie puis radiothérapie</label>
+            <label><input type="checkbox" name="c1_q6_2" data-correct="false"> 2. Un test Oncotype est indiqué</label>
+            <label><input type="checkbox" name="c1_q6_3" data-correct="false"> 3. Radiothérapie puis chimiothérapie</label>
+            <label><input type="checkbox" name="c1_q6_4" data-correct="false"> 4. Hormonothérapie exclusive au vu de l’âge</label>
+            <label><input type="checkbox" name="c1_q6_5" data-correct="false"> 5. Une reprise chirurgicale est indiquée</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="7" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q7 -->
+        <div class="question" data-question="7">
+          <h3>Question 7 – QCM</h3>
+          <p>
+            La patiente reçoit une chimiothérapie adjuvante et vous la recevez en consultation de radiothérapie.
+            Quelle(s) sont le(s) réponse(s) exactes ?
+          </p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c1_q7_1" data-correct="false"> 1. Radiothérapie du sein droit + aires ganglionnaires I à IV avec boost</label>
+            <label><input type="checkbox" name="c1_q7_2" data-correct="false"> 2. Le schéma normo-fractionné est le seul standard thérapeutique</label>
+            <label><input type="checkbox" name="c1_q7_3" data-correct="false"> 3. La patiente n’a pas d’indication de boost</label>
+            <label><input type="checkbox" name="c1_q7_4" data-correct="false"> 4. La patiente peut bénéficier des modalités d'irradiation de l'étude Fast Forward</label>
+            <label><input type="checkbox" name="c1_q7_5" data-correct="true"> 5. Un boost intégré peut être réalisé</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="8" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q8 -->
+        <div class="question" data-question="8">
+          <h3>Question 8 – Question ouverte</h3>
+          <p>
+            Vous préconisez une radiothérapie hypofractionnée avec boost sur le sein droit et les aires ganglionnaires droites.
+            Sur quelle(s) étude(s) princeps de phase 3 basez-vous votre proposition d’hypofractionnement ?
+          </p>
+
+          <textarea
+  name="c1_q8_open"
+  rows="3"
+  required
+  placeholder="Ex : xxx"
+  data-open-correct="hypog01skagen|hypog01|skagen"
+></textarea>
+
+
+          <button type="button" class="next-button" data-next="9" disabled>Question suivante</button>
+        </div>
+
+        <!-- Q9 -->
+        <div class="question" data-question="9">
+          <h3>Question 9 – QCM</h3>
+          <p>
+            Vous recevez la patiente en fin de radiothérapie pour évoquer les futurs traitements. Elle vous présente un bilan biologique retrouvant une hypercholestérolémie, un déficit en vitamine D. L’ostéodensitométrie retrouve une ostéopénie, et l’analyse génétique ne retrouve pas de mutation prédisposante.
+            Quelle(s) sont le(s) réponse(s) exactes ?
+          </p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c1_q9_1" data-correct="true"> 1. Vous prescrivez de l’Abémaciclib en adjuvant</label>
+            <label><input type="checkbox" name="c1_q9_2" data-correct="true"> 2. La patiente relève d’une hormonothérapie par inhibiteur de l’aromatase</label>
+            <label><input type="checkbox" name="c1_q9_3" data-correct="false"> 3. L’Olaparib n’aurait pas été indiqué même en cas de mutation BRCA</label>
+            <label><input type="checkbox" name="c1_q9_4" data-correct="false"> 4. Pas d’IRM de surveillance mais mammographie + échographie dans 1 an</label>
+            <label><input type="checkbox" name="c1_q9_5" data-correct="false"> 5. L’Abémaciclib doit être pris sur des cycles de 28 j</label>
+          </div>
+
+          <button type="button" class="submit-case">Terminer le cas 1</button>
+        </div>
+
+        <div class="score" data-score-for="1"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================== CAS CLINIQUE 2 ================== -->
+  <div class="case" id="case2">
+    <h2>Cas clinique 2</h2>
+
+    <!-- Contenu du cas 2 MASQUÉ au chargement -->
+    <div id="case2-content">
+      <div class="case-description">
+        Mr X, 69 ans, se présente à votre consultation sur adressage de son médecin traitant devant
+        une élévation du PSA. Le patient ne présente aucun antécédent médical notable hormis une
+        cholécystectomie il y a 10 ans. Le bilan biologique ne retrouve aucune anomalie en dehors
+        d’un PSA à 50,65 ng/ml.
+        À l’interrogatoire, le patient décrit aller 1 à 2 fois la nuit aux toilettes, pas de trouble
+        digestif et des troubles de l’érection préexistants impactant légèrement son activité sexuelle.
+      </div>
+
+      <form class="case-form" data-case="2">
+
+        <!-- C2 Q1 -->
+        <div class="question" data-question="1">
+          <h3>Question 1 – QCM</h3>
+          <p>Quelles sont les réponses exactes :</p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c2_q1_1" data-correct="false"> 1. Aucun examen complémentaire n’est indiqué car le patient est asymptomatique</label>
+            <label><input type="checkbox" name="c2_q1_2" data-correct="false"> 2. J’évalue sa fonction urinaire via le questionnaire IIEF5</label>
+            <label><input type="checkbox" name="c2_q1_3" data-correct="true"> 3. Je pratique un toucher rectal</label>
+            <label><input type="checkbox" name="c2_q1_4" data-correct="true"> 4. Une IRM multiparamétrique est indiquée</label>
+            <label><input type="checkbox" name="c2_q1_5" data-correct="false"> 5. Le patient a un cancer de prostate et je l’oriente directement vers un urologue</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="2" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q2 -->
+        <div class="question" data-question="2">
+          <h3>Question 2 – QCM</h3>
+          <p>
+            L’IRM prostatique retrouve une lésion PIRADS 5 de la zone périphérique droite et gauche
+            de la prostate moyenne et de la base prostatique, accompagnée d’adénopathies satellites.
+            Quelles sont les réponses exactes :
+          </p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c2_q2_1" data-correct="false"> 1. Des biopsies prostatiques étaient indiquées avant l’IRM</label>
+            <label><input type="checkbox" name="c2_q2_2" data-correct="false"> 2. Des biopsies ciblées sont, uniquement indiquées, car le cancer est évident</label>
+            <label><input type="checkbox" name="c2_q2_3" data-correct="true"> 3. Des biopsies cartographiées et ciblées sont recommandées</label>
+            <label><input type="checkbox" name="c2_q2_4" data-correct="false"> 4. Les biopsies prostatiques trans-périnéales sont plus adapatées qu'en trans-rectales pour la cartographie</label>
+            <label><input type="checkbox" name="c2_q2_5" data-correct="true"> 5. Les biopsies prostatiques trans-rectales sont plus à risque infectieux</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="3" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q3 -->
+        <div class="question" data-question="3">
+          <h3>Question 3 – QCM</h3>
+          <p>Voici les résultats de la biopsie. Quelles sont les réponses fausses :</p>
+          <img src="images/biopsie1.png" 
+               alt="Résultat de la biopsie" 
+               style="max-width: 100%; border: 1px solid #ccc; margin: 10px 0; border-radius: 6px;">
+          <div class="answers">
+            <label><input type="checkbox" name="c2_q3_1" data-correct="true"> 1. Le patient présente un cancer Gleason 7 (3+4)</label>
+            <label><input type="checkbox" name="c2_q3_2" data-correct="true"> 2. Le patient présente moins de 50 % des biopsies positives</label>
+            <label><input type="checkbox" name="c2_q3_3" data-correct="true"> 3. Les biopsies ne sont pas informatives car il manque des informations</label>
+            <label><input type="checkbox" name="c2_q3_4" data-correct="true"> 4. Le patient présente un cancer ISUP 2</label>
+            <label><input type="checkbox" name="c2_q3_5" data-correct="true"> 5. Le patient présente un cancer de risque intermédiaire défavorable</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="4" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q4 -->
+        <div class="question" data-question="4">
+          <h3>Question 4 – QCM (une seule réponse)</h3>
+          <p>Un bilan d’extension est indiqué, vous réalisez préférentiellement :</p>
+
+          <div class="answers">
+            <label><input type="radio" name="c2_q4" value="1" data-correct="false"> 1. TEP 18FDG</label>
+            <label><input type="radio" name="c2_q4" value="2" data-correct="true"> 2. TEP 18F-PSMA</label>
+            <label><input type="radio" name="c2_q4" value="3" data-correct="false"> 3. Scintigraphie et scanner thoracique</label>
+            <label><input type="radio" name="c2_q4" value="4" data-correct="false"> 4. TEP choline</label>
+            <label><input type="radio" name="c2_q4" value="5" data-correct="false"> 5. IRM corps entier</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="5" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q5 -->
+        <div class="question" data-question="5">
+          <h3>Question 5 – Question ouverte</h3>
+          <p>
+            Le TEP retrouve une atteinte prostatique bilatérale étendue avec atteinte ganglionnaire plurifocale.
+            Quelle est la classification TNM de ce patient ?
+          </p>
+
+          <textarea
+  name="c2_q5_open"
+  rows="3"
+  required
+  placeholder="Ex : TxNx"
+  data-open-correct="t3bn1"
+></textarea>
+
+          <button type="button" class="next-button" data-next="6" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q6 -->
+        <div class="question" data-question="6">
+          <h3>Question 6 – QCM</h3>
+          <p>Vous présentez le dossier en RCP urologique, quel traitement proposeriez-vous ?</p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c2_q6_1" data-correct="false"> 1. Prostatectomie avec curage ganglionnaire + hormonothérapie courte</label>
+            <label><input type="checkbox" name="c2_q6_2" data-correct="false"> 2. Radiothérapie de la prostate seule + hormonothérapie longue</label>
+            <label><input type="checkbox" name="c2_q6_3" data-correct="false"> 3. Chimiothérapie néo-adjuvante et radiothérapie de clôture</label>
+            <label><input type="checkbox" name="c2_q6_4" data-correct="true"> 4. Radiothérapie pelvi-prostatique avec hormonothérapie intensifiée</label>
+            <label><input type="checkbox" name="c2_q6_5" data-correct="false"> 5. Radiothérapie interne vectorisée par lutétium PSMA</label>
+          </div>
+
+          <button type="button" class="next-button" data-next="7" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q7 -->
+        <div class="question" data-question="7">
+          <h3>Question 7 – Question ouverte</h3>
+          <p>Sur quelle étude princeps de phase 3 basez-vous votre proposition ?</p>
+
+          <textarea
+  name="c2_q7_open"
+  rows="3"
+  required
+  placeholder="Ex : xxx"
+  data-open-correct="stampede"
+></textarea>
+
+          <button type="button" class="next-button" data-next="8" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q8 -->
+        <div class="question" data-question="8">
+          <h3>Question 8 – QCM (schéma thérapeutique)</h3>
+          <p>Vous proposez une hormonothérapie longue par Décapeptyl, Abiratérone et prednisone.
+              Quel schéma thérapeutique proposeriez-vous ?</p>
+
+          <div class="answers">
+            <label><input type="radio" name="c2_q8" value="1" data-correct="false">
+              1. Décapeptyl 11,25 mg (semestriel) SC + Abiratérone 500 mg + Prednisone 5 mg
+            </label>
+            <label><input type="radio" name="c2_q8" value="2" data-correct="false">
+              2. Décapeptyl 22,5 mg (semestriel) SC + Abiratérone 500 mg + Prednisone 10 mg
+            </label>
+            <label><input type="radio" name="c2_q8" value="3" data-correct="true">
+              3. Décapeptyl 22,5 mg (semestriel) IM + Abiratérone 1000 mg + Prednisone 5 mg
+            </label>
+            <label><input type="radio" name="c2_q8" value="4" data-correct="false">
+              4. Décapeptyl 11,25 mg (semestriel) IM + Abiratérone 1000 mg + Prednisone 5 mg
+            </label>
+            <label><input type="radio" name="c2_q8" value="5" data-correct="false">
+              5. Décapeptyl 11,25 mg (trimestriel) IM + Abiratérone 100 mg + Prednisone 10 mg
+            </label>
+          </div>
+
+          <button type="button" class="next-button" data-next="9" disabled>Question suivante</button>
+        </div>
+
+        <!-- C2 Q9 -->
+        <div class="question" data-question="9">
+          <h3>Question 9 – QCM</h3>
+          <p>Concernant le schéma thérapeutique, quelles sont les réponses exactes :</p>
+
+          <div class="answers">
+            <label><input type="checkbox" name="c2_q9_1" data-correct="true"> 1. Un bilan cardiologique est indiqué</label>
+            <label><input type="checkbox" name="c2_q9_2" data-correct="false"> 2. L’hormonothérapie doit être instaurée pour 18 mois</label>
+            <label><input type="checkbox" name="c2_q9_3" data-correct="true"> 3. Les volumes de la radiothérapie concerneront la prostate, les vésicules séminales et les aires ganglionnaires pelviennes</label>
+            <label><input type="checkbox" name="c2_q9_4" data-correct="false"> 4. L’Abiratérone ne nécessite pas de surveillance biologique</label>
+            <label><input type="checkbox" name="c2_q9_5" data-correct="false"> 5. L’Abiratérone aurait pu être remplacée par de l’Apalutamide</label>
+          </div>
+
+          <button type="button" class="submit-case">Terminer le cas 2</button>
+        </div>
+
+        <div class="score" data-score-for="2"></div>
+      </form>
+    </div>
+  </div>
+
+
+  <script>
+    // ====== Validation du statut avant d'afficher le cas 1 ======
+    const startBtn = document.getElementById('startCase1');
+    const statusBlock = document.getElementById('status-block');
+    const q1_case1 = document.querySelector('#case1 .question[data-question="1"]');
+    const case1Content = document.getElementById('case1-content');
+
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        const status = document.getElementById('studentStatus').value;
+
+        if (!status) {
+          alert("Merci de sélectionner votre statut avant de commencer.");
+          return;
+        }
+
+        // On garde le statut en mémoire pour le cas 2
+        window.selectedStatus = status;
+
+        // on cache le bloc de sélection
+        statusBlock.style.display = 'none';
+
+        // on affiche le contenu du cas 1
+        case1Content.style.display = 'block';
+
+        // on affiche la première question
+        q1_case1.classList.add('visible');
+        q1_case1.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    // ====== ONGLET CAS 1 / CAS 2 ======
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const cases = document.querySelectorAll('.case');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+
+        // Si on clique sur l’onglet "Cas clinique 2"
+        if (targetId === 'case2') {
+          // On vérifie que le statut a bien été choisi
+          const statusSelect = document.getElementById('studentStatus');
+          const status =
+            (window.selectedStatus) ||
+            (statusSelect ? statusSelect.value.trim() : "");
+
+          if (!status) {
+            alert("Merci de sélectionner votre statut avant de commencer le cas clinique 2.");
+            return; // on bloque le changement d’onglet
+          }
+
+          // Statut OK : on affiche le contenu du cas 2 + Q1
+          const case2Content = document.getElementById('case2-content');
+          const q1_case2 = document.querySelector('#case2 .question[data-question="1"]');
+
+          if (case2Content) {
+            case2Content.style.display = 'block';
+          }
+          if (q1_case2) {
+            q1_case2.classList.add('visible');
+          }
+        }
+
+        // Gestion standard des onglets
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        cases.forEach(c => {
+          if (c.id === targetId) {
+            c.classList.add('active');
+          } else {
+            c.classList.remove('active');
+          }
+        });
+      });
+    });
+
+    // ====== DÉBLOCAGE + VERROUILLAGE DES QUESTIONS ======
+    const allQuestions = document.querySelectorAll('.question');
+
+    allQuestions.forEach(question => {
+      const nextButton = question.querySelector('.next-button');
+      if (!nextButton) return; // pas de bouton "suivant" sur la dernière question de chaque cas
+
+      const choiceInputs = question.querySelectorAll(
+        'input[type="radio"], input[type="checkbox"]'
+      );
+      const textarea = question.querySelector('textarea');
+
+      // Active / désactive le bouton "Question suivante" selon si la question est répondue
+      function checkAnswered() {
+        let answered = false;
+
+        if (choiceInputs.length > 0) {
+          answered = Array.from(choiceInputs).some(i => i.checked);
+        } else if (textarea) {
+          answered = textarea.value.trim().length > 0;
+        }
+
+        nextButton.disabled = !answered;
+      }
+
+      // Surveiller les réponses
+      if (choiceInputs.length > 0) {
+        choiceInputs.forEach(input => {
+          input.addEventListener('change', checkAnswered);
+        });
+      }
+      if (textarea) {
+        textarea.addEventListener('input', checkAnswered);
+      }
+
+      // Clic sur "Question suivante"
+      nextButton.addEventListener('click', () => {
+        // Si le bouton est désactivé, on ne fait rien (sécurité)
+        if (nextButton.disabled) return;
+
+        // 1. Verrouiller la question courante
+        const inputsToLock = question.querySelectorAll('input, textarea');
+        inputsToLock.forEach(i => {
+          i.disabled = true;
+        });
+        nextButton.disabled = true;
+
+        // 2. Afficher la question suivante
+        const nextNumber = nextButton.getAttribute('data-next');
+        const parentCase = question.closest('.case');
+        const nextQuestion = parentCase.querySelector(
+          `.question[data-question="${nextNumber}"]`
+        );
+
+        if (nextQuestion) {
+          nextQuestion.classList.add('visible');
+          nextQuestion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // ====== CALCUL DU SCORE PAR CAS ======
+// 1 point par QUESTION notée si :
+// - QCM : toutes les bonnes réponses (data-correct="true") sont cochées
+//         ET aucune mauvaise (data-correct="false") n’est cochée
+// - Question ouverte notée : la réponse correspond à une des valeurs data-open-correct
+//   après normalisation (minuscules, suppression espaces, accents ignorés)
+
+const caseForms = document.querySelectorAll('.case-form');
+
+caseForms.forEach(form => {
+  const caseNumber = form.getAttribute('data-case');
+  const submitBtn = form.querySelector('.submit-case');
+  const scoreDiv = form.querySelector(`.score[data-score-for="${caseNumber}"]`);
+
+  submitBtn.addEventListener('click', () => {
+
+    // Vérifier que toutes les questions du cas sont répondues
+    const questions = form.querySelectorAll('.question');
+    let allAnswered = true;
+
+    questions.forEach(q => {
+      const choiceInputs = q.querySelectorAll(
+        'input[type="radio"], input[type="checkbox"]'
+      );
+      const textarea = q.querySelector('textarea');
+
+      let answered = true;
+
+      if (choiceInputs.length > 0) {
+        answered = Array.from(choiceInputs).some(i => i.checked);
+      }
+
+      if (textarea) {
+        if (textarea.hasAttribute('required') &&
+            textarea.value.trim().length === 0) {
+          answered = false;
+        }
+      }
+
+      if (!answered) {
+        allAnswered = false;
+      }
+    });
+
+    if (!allAnswered) {
+      alert("Merci de répondre à toutes les questions du cas avant de valider.");
+      return;
+    }
+
+    // Calcul du score (QCM + questions ouvertes notées)
+    let score = 0;
+    let totalScoredQuestions = 0;
+
+    questions.forEach(q => {
+      // --- QCM ---
+      const qcmInputs = q.querySelectorAll(
+        'input[type="radio"][data-correct], input[type="checkbox"][data-correct]'
+      );
+      const hasQcm = qcmInputs.length > 0;
+
+      if (hasQcm) {
+        totalScoredQuestions++;
+
+        const correctInputs = Array.from(qcmInputs).filter(
+          i => i.getAttribute('data-correct') === 'true'
+        );
+        const incorrectInputs = Array.from(qcmInputs).filter(
+          i => i.getAttribute('data-correct') !== 'true'
+        );
+
+        const allCorrectSelected = correctInputs.every(i => i.checked);
+        const noIncorrectSelected = incorrectInputs.every(i => !i.checked);
+
+        if (correctInputs.length > 0 && allCorrectSelected && noIncorrectSelected) {
+          score++;
+        }
+      }
+
+      // --- Question ouverte notée ---
+      const openField = q.querySelector('textarea[data-open-correct]');
+      if (openField) {
+        totalScoredQuestions++;
+
+        const expectedRaw = openField.getAttribute('data-open-correct') || "";
+
+        // Normalisation : minuscules, suppression espaces, accents
+const normalize = (str) => {
+  return str
+    .toLowerCase()
+    .normalize("NFD")                 // sépare les accents
+    .replace(/[\u0300-\u036f]/g, "")  // supprime les accents
+    .replace(/[^a-z0-9]/g, "");       // supprime tout sauf lettres et chiffres
+};
+        const expectedList = expectedRaw
+          .split('|')
+          .map(s => normalize(s))
+          .filter(s => s.length > 0);
+
+        const given = normalize(openField.value.trim());
+
+        if (expectedList.length > 0 && expectedList.includes(given)) {
+          score++;
+        }
+      }
+    });
+
+    scoreDiv.textContent = `Score (QCM + ouvertes notées) : ${score} / ${totalScoredQuestions}`;
+function sendToGoogleSheets(payload) {
+  fetch("https://script.google.com/macros/s/AKfycbz4ZQpClCGSs4mBpITIlWF5vfA3Uu5F4xrPpRJDyLZdVskJGWY4YLlYF3cxUyMjl2_H/exec", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+}
+// ====== ENVOI DES RÉPONSES VERS GOOGLE SHEETS ======
+const answers = [];
+
+questions.forEach(q => {
+  const inputs = q.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+  const textarea = q.querySelector('textarea');
+
+  if (inputs.length > 0) {
+    const selected = Array.from(inputs)
+  .filter(i => i.checked)
+  .map(i => {
+    const text = i.parentElement.innerText.trim();
+    const match = text.match(/^(\d+)/); // récupère le chiffre au début
+    return match ? match[1] : "";
+  })
+  .filter(v => v !== "");
+
+    answers.push(selected.join(" | "));
+  } else if (textarea) {
+    answers.push(textarea.value.trim());
+  } else {
+    answers.push("");
+  }
+});
+
+sendToGoogleSheets({
+  case: caseNumber === "1" ? "Cas_Clinique_1" : "Cas_Clinique_2",
+  status: window.selectedStatus || "Non renseigné",
+  answers: answers,
+  score: score
+});
+
+
+    // Verrouiller tout le formulaire après validation finale
+    Array.from(form.elements).forEach(el => {
+      if (el.tagName !== "DIV" && el.type !== "button") {
+        el.disabled = true;
+      }
+    });
+    submitBtn.disabled = true;
+  });
+});
+
+
+
+  </script>
+
+</body>
+</html>
